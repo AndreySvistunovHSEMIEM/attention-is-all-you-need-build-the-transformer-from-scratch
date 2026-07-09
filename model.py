@@ -331,8 +331,12 @@ def apply_residual_add_and_norm(residual_input, sublayer_output, gamma, beta, ep
     normalized_residual_addition = normalize_and_scale_with_gamma_beta(add, gamma, beta, eps)
     return normalized_residual_addition
 
-# Step 38 - apply_dropout_with_keep_mask (not yet solved)
-# TODO: implement
+# Step 38 - apply_dropout_with_keep_mask
+def apply_dropout_with_keep_mask(x, keep_mask, keep_prob):
+    # TODO: multiply x by the boolean keep_mask and rescale by 1/keep_prob.
+    x_masked = x.masked_fill(~keep_mask, value=0.0)
+    x_masked /= keep_prob
+    return x_masked
 
 # Step 39 - encoder_layer_self_attention_sublayer (not yet solved)
 # TODO: implement
