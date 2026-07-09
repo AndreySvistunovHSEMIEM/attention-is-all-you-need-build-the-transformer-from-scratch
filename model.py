@@ -410,8 +410,30 @@ def decoder_layer_feed_forward_sublayer(y, w1, b1, w2, b2, gamma, beta):
     residuals = apply_residual_add_and_norm(y, ffn, gamma, beta)
     return residuals
 
-# Step 46 - assemble_decoder_layer (not yet solved)
-# TODO: implement
+# Step 46 - assemble_decoder_layer
+def assemble_decoder_layer(y, encoder_output, layer_params, num_heads, src_mask, tgt_mask):
+    """Run a full decoder layer: masked self-attention, cross-attention, then FFN."""
+    p = layer_params
+
+    h = decoder_layer_masked_self_attention_sublayer(
+        y,
+        p["w_q_self"], p["w_k_self"], p["w_v_self"], p["w_o_self"],
+        p["self_gamma"], p["self_beta"],
+        num_heads, tgt_mask,
+    )
+
+    h = decoder_layer_cross_attention_sublayer(
+        h, encoder_output,
+        p["w_q_cross"], p["w_k_cross"], p["w_v_cross"], p["w_o_cross"],
+        p["cross_gamma"], p["cross_beta"],
+        num_heads, src_mask,
+    )
+
+    return decoder_layer_feed_forward_sublayer(
+        h,
+        p["w1"], p["b1"], p["w2"], p["b2"],
+        p["ffn_gamma"], p["ffn_beta"],
+    )
 
 # Step 47 - stack_decoder_layers (not yet solved)
 # TODO: implement
