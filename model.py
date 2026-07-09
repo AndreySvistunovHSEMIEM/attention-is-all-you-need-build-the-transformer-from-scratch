@@ -435,8 +435,13 @@ def assemble_decoder_layer(y, encoder_output, layer_params, num_heads, src_mask,
         p["ffn_gamma"], p["ffn_beta"],
     )
 
-# Step 47 - stack_decoder_layers (not yet solved)
-# TODO: implement
+# Step 47 - stack_decoder_layers
+def stack_decoder_layers(y, encoder_output, decoder_layer_params_list, num_heads, src_mask, tgt_mask):
+    # TODO: sequentially apply each decoder layer to the running target hidden state.
+    h = y.clone()
+    for params in decoder_layer_params_list:
+        h = assemble_decoder_layer(h, encoder_output, params, num_heads, src_mask, tgt_mask)
+    return h
 
 # Step 48 - apply_final_output_projection (not yet solved)
 # TODO: implement
