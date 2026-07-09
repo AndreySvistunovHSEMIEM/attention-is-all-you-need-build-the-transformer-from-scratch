@@ -357,14 +357,18 @@ def encoder_layer_feed_forward_sublayer(x, w1, b1, w2, b2, gamma, beta):
 # Step 41 - assemble_encoder_layer
 def assemble_encoder_layer(x, layer_params, num_heads, src_mask):
     # TODO: chain the self-attention sublayer and the feed-forward sublayer using layer_params.
-    w_q, w_k, w_v, w_o = layer_params["w_q"], layer_params["w_k"], layer_params["w_v"], layer_params["w_o"]
+    p = layer_params
+    w_q, w_k, w_v, w_o = (
+        p["w_q"], p["w_k"], 
+        p["w_v"], p["w_o"],
+    )
     mha = assemble_multi_head_attention_forward(x, x, x, w_q, w_k, w_v, w_o, num_heads, src_mask)
-    attn_gamma, attn_beta = layer_params["attn_gamma"], layer_params["attn_beta"]
+    attn_gamma, attn_beta = p["attn_gamma"], p["attn_beta"]
     h = apply_residual_add_and_norm(x, mha, attn_gamma, attn_beta)
     w1, b1, w2, b2, ffn_gamma, ffn_beta = (
-        layer_params["w1"], layer_params["b1"],
-        layer_params["w2"], layer_params["b2"],
-        layer_params["ffn_gamma"], layer_params["ffn_beta"],
+        p["w1"], p["b1"],
+        p["w2"], p["b2"],
+        p["ffn_gamma"], p["ffn_beta"],
     )
     y = encoder_layer_feed_forward_sublayer(h, w1, b1, w2, b2, ffn_gamma, ffn_beta)
     return y
