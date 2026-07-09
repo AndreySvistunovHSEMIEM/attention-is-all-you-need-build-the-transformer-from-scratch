@@ -169,7 +169,7 @@ import torch
 def mask_attention_scores_with_neg_inf(scores, mask):
     """Set entries of scores where mask is False to -inf."""
     # TODO: replace blocked positions of scores with negative infinity
-    return scores.masked_fill_(~mask, float("-inf"))
+    return scores.masked_fill(~mask, float("-inf"))
 
 # Step 20 - softmax_attention_weights
 import torch
