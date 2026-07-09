@@ -395,6 +395,8 @@ import torch
 
 def decoder_layer_cross_attention_sublayer(y, encoder_output, w_q, w_k, w_v, w_o, gamma, beta, num_heads, src_mask):
     # TODO: run multi-head cross-attention (Q from y, K/V from encoder_output) and wrap with add-and-norm
+    if src_mask is not None and src_mask.dim() == 2:
+        src_mask = src_mask[:, None, None, :]
     cross_attention = assemble_multi_head_attention_forward(y, encoder_output, encoder_output, w_q, w_k, w_v, w_o, num_heads, src_mask)
     normalized_scores = apply_residual_add_and_norm(y, cross_attention, gamma, beta)
     return normalized_scores
