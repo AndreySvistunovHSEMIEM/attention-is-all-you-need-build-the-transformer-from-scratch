@@ -466,17 +466,23 @@ def apply_log_softmax_over_vocab(logits):
 
 # Step 51 - run_transformer_forward
 def run_transformer_forward(src_ids, tgt_ids, model_params, num_heads, pad_id):
-    token_embedding = model_params["token_embedding"]
+    if "token_embedding" in model_params:
+        token_embedding_src = model_params["token_embedding"]
+        token_embedding_tgt = model_params["token_embedding"]
+    else:
+        token_embedding_src = model_params["src_embedding"]
+        token_embedding_tgt = model_params["tgt_embedding"]
+    
     output_projection = model_params["output_projection"]
-    d_model = token_embedding.shape[1]
+    d_model = token_embedding_src.shape[1]
 
     src_len, tgt_len = src_ids.shape[1], tgt_ids.shape[1]
     pe = build_sinusoidal_positional_encoding(max(src_len, tgt_len), d_model)
 
-    src_emb = scale_embeddings_by_sqrt_d_model(token_embedding[src_ids], d_model)
+    src_emb = scale_embeddings_by_sqrt_d_model(token_embedding_src[src_ids], d_model)
     src_emb = add_positional_encoding_to_embeddings(src_emb, pe)
 
-    tgt_emb = scale_embeddings_by_sqrt_d_model(token_embedding[tgt_ids], d_model)
+    tgt_emb = scale_embeddings_by_sqrt_d_model(token_embedding_tgt[tgt_ids], d_model)
     tgt_emb = add_positional_encoding_to_embeddings(tgt_emb, pe)
 
     src_mask = build_padding_mask(src_ids, pad_id)
@@ -746,8 +752,27 @@ def zero_all_parameter_gradients(parameter_list):
     for param in parameter_list:
         param.grad = None
 
-# Step 71 - compute_batch_training_loss (not yet solved)
-# TODO: implement
+# Step 71 - compute_batch_training_loss
+"""
+model_params:
+    encoder_layers 
+    decoder_layers 
+    src_embedding 
+    tgt_embedding 
+    output_projection
+config:
+    pad_id
+    start_id
+    vocab_size
+    smoothing
+    d_model 
+    num_heads
+"""
+
+def compute_batch_training_loss(src_batch, tgt_batch, model_params, config):
+    # TODO: shift targets right, run the forward pass, build smoothed targets, and average the KL loss over non-pad tokens.
+    tgt_ids = shift_targets_right_with_start_token(tgt_batch, config["start_id"])
+    logits = run_transformer_forward(src_batch, tgt_ids, model_params, config["num_heads"], config["pad_id"])
 
 # Step 72 - run_training_step_with_backprop (not yet solved)
 # TODO: implement
