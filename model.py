@@ -694,7 +694,7 @@ import torch
 def update_adam_first_moment(m_prev, grad, beta1):
     """Return m_t = beta1 * m_prev + (1 - beta1) * grad."""
     # TODO: apply the Adam first-moment EMA update and return the new tensor
-    return beta1 * m_prev + (1 - beta1) * grad
+    return beta1 * m_prev + (1 - beta1) * grad.detach()
 
 # Step 66 - update_adam_second_moment
 import torch
