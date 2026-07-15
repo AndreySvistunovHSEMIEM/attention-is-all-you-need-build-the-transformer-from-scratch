@@ -466,12 +466,12 @@ def apply_log_softmax_over_vocab(logits):
 
 # Step 51 - run_transformer_forward
 def run_transformer_forward(src_ids, tgt_ids, model_params, num_heads, pad_id):
-    if "token_embedding" in model_params:
-        token_embedding_src = model_params["token_embedding"]
-        token_embedding_tgt = model_params["token_embedding"]
-    else:
+    if "src_embedding" in model_params:
         token_embedding_src = model_params["src_embedding"]
         token_embedding_tgt = model_params["tgt_embedding"]
+    else:
+        token_embedding_src = model_params["token_embedding"]
+        token_embedding_tgt = model_params["token_embedding"]
     
     output_projection = model_params["output_projection"]
     d_model = token_embedding_src.shape[1]
@@ -773,6 +773,16 @@ def compute_batch_training_loss(src_batch, tgt_batch, model_params, config):
     # TODO: shift targets right, run the forward pass, build smoothed targets, and average the KL loss over non-pad tokens.
     tgt_ids = shift_targets_right_with_start_token(tgt_batch, config["start_id"])
     logits = run_transformer_forward(src_batch, tgt_ids, model_params, config["num_heads"], config["pad_id"])
+    
+    confidence = 1 - config["smoothing"]
+    smoothing_distr = build_uniform_smoothing_distribution((*tgt_batch.shape, config["vocab_size"]), config["vocab_size"], config["smoothing"])
+    confidence_smoothing_distr = set_confidence_on_gold_tokens(smoothing_distr, tgt_ids, confidence)
+    zero_pad_distr = zero_pad_column_and_pad_token_rows(confidence_smoothing_distr,  tgt_ids, config["pad_id"])
+
+    smoothed_kl_loss = compute_label_smoothed_kl_loss(logits, zero_pad_distr)
+    loss = average_loss_over_non_pad_tokens(smoothed_kl_loss,  tgt_ids, config["pad_id"])
+    model_params.setdefault("token_embedding", model_params.get("src_embedding"))
+    return loss
 
 # Step 72 - run_training_step_with_backprop (not yet solved)
 # TODO: implement
